@@ -182,6 +182,22 @@ Virtual Threads são threads leves gerenciadas pela JVM que permitem lidar com u
 - Virtual Threads **não substituem** otimizações de banco de dados (índices, queries eficientes, controle de concorrência).
 - O pool de conexões do **HikariCP** continua sendo o gargalo real, pois o número de conexões ao banco é limitado (configurado entre 5 e 15 conexões). Aumentar o pool de conexões para compensar Virtual Threads não é recomendado — o limite continua sendo o banco de dados.
 
+### Versionamento da API
+API foi versionada utilizando URI Versioning, através do prefixo /v1.
+````
+POST /v1/pautas
+POST /v1/pautas/{id}/votos
+GET  /v1/pautas/{id}/resultado
+````
+Justificativa da estratégia
+
+Foi adotado versionamento via URI por:
+
+ - Simplicidade e clareza para consumidores
+ - Facilidade de manutenção
+ - Compatibilidade com ferramentas de API Gateway
+ - Estratégia amplamente utilizada em APIs REST públicas
+
 ---
 
 ## 🧰 Tecnologias Utilizadas
