@@ -8,7 +8,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +19,9 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Entity
-@Table(name = "voto")
+@Table(name = "voto",
+        uniqueConstraints = @UniqueConstraint(name = "uk_voto_associado_pauta", columnNames = {"associado_id", "pauta_id"}),
+        indexes = @Index(name = "idx_voto_pauta_id", columnList = "pauta_id"))
 @Data
 @Builder
 @NoArgsConstructor

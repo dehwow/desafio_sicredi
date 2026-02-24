@@ -4,9 +4,12 @@ import com.sicredi.desafiosicredi.adapter.out.persistence.entity.SessaoVotacaoEn
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface JpaSessaoVotacaoRepository extends JpaRepository<SessaoVotacaoEntity, Long> {
     Optional<SessaoVotacaoEntity> findByPautaId(Long pautaId);
+    List<SessaoVotacaoEntity> findByDataHoraFimBeforeAndResultadoPublicadoFalse(LocalDateTime agora);
 }

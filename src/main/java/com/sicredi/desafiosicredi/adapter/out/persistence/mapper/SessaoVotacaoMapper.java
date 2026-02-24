@@ -17,7 +17,9 @@ public interface SessaoVotacaoMapper {
                 entity.getPautaId(),
                 entity.getDataHoraInicio(),
                 entity.getDataHoraFim(),
-                entity.getStatus()
+                entity.getStatus(),
+                entity.isResultadoPublicado(),
+                entity.getVersion()
         );
     }
 }

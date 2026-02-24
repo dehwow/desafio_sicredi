@@ -6,6 +6,7 @@ import com.sicredi.desafiosicredi.domain.model.OpcaoVoto;
 import com.sicredi.desafiosicredi.domain.model.SessaoVotacao;
 import com.sicredi.desafiosicredi.domain.model.StatusSessao;
 import com.sicredi.desafiosicredi.domain.model.Voto;
+import com.sicredi.desafiosicredi.application.port.out.CpfValidationPort;
 import com.sicredi.desafiosicredi.application.port.out.SessaoVotacaoRepositoryPort;
 import com.sicredi.desafiosicredi.application.port.out.VotoRepositoryPort;
 import org.junit.jupiter.api.DisplayName;
@@ -32,6 +33,9 @@ class RegistrarVotoUseCaseTest {
     @Mock
     private VotoRepositoryPort votoRepositoryPort;
 
+    @Mock
+    private CpfValidationPort cpfValidationPort;
+
     @InjectMocks
     private RegistrarVotoUseCase registrarVotoUseCase;
 
@@ -40,12 +44,13 @@ class RegistrarVotoUseCaseTest {
     void deveRegistrarVotoComSucesso() {
         Long pautaId = 1L;
         UUID associadoId = UUID.randomUUID();
-        RegistrarVotoCommand command = new RegistrarVotoCommand(pautaId, associadoId, OpcaoVoto.SIM);
+        String cpf = "12345678901";
+        RegistrarVotoCommand command = new RegistrarVotoCommand(pautaId, associadoId, cpf, OpcaoVoto.SIM);
         SessaoVotacao sessao = new SessaoVotacao(pautaId, 1);
         Voto voto = new Voto(associadoId, pautaId, OpcaoVoto.SIM);
 
+        when(cpfValidationPort.isAbleToVote(cpf)).thenReturn(true);
         when(sessaoVotacaoRepositoryPort.findByPautaId(pautaId)).thenReturn(Optional.of(sessao));
-        when(votoRepositoryPort.existsByAssociadoIdAndPautaId(associadoId, pautaId)).thenReturn(false);
         when(votoRepositoryPort.save(any(Voto.class))).thenReturn(voto);
 
         Voto response = registrarVotoUseCase.execute(command);
@@ -56,11 +61,27 @@ class RegistrarVotoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve falhar se o CPF não estiver apto a votar")
+    void deveFalharSeCpfNaoAptoAVotar() {
+        Long pautaId = 1L;
+        UUID associadoId = UUID.randomUUID();
+        String cpf = "12345678901";
+        RegistrarVotoCommand command = new RegistrarVotoCommand(pautaId, associadoId, cpf, OpcaoVoto.SIM);
+
+        when(cpfValidationPort.isAbleToVote(cpf)).thenReturn(false);
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> registrarVotoUseCase.execute(command));
+        assertEquals("Associado não está apto a votar.", exception.getMessage());
+    }
+
+    @Test
     @DisplayName("Deve falhar se a sessão não existir")
     void deveFalharSeSessaoNaoExistir() {
         Long pautaId = 1L;
-        RegistrarVotoCommand command = new RegistrarVotoCommand(pautaId, UUID.randomUUID(), OpcaoVoto.SIM);
+        String cpf = "12345678901";
+        RegistrarVotoCommand command = new RegistrarVotoCommand(pautaId, UUID.randomUUID(), cpf, OpcaoVoto.SIM);
 
+        when(cpfValidationPort.isAbleToVote(cpf)).thenReturn(true);
         when(sessaoVotacaoRepositoryPort.findByPautaId(pautaId)).thenReturn(Optional.empty());
 
         BusinessException exception = assertThrows(BusinessException.class, () -> registrarVotoUseCase.execute(command));
@@ -68,15 +89,17 @@ class RegistrarVotoUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve falhar se o associado já votou")
+    @DisplayName("Deve falhar se o associado já votou (constraint do banco)")
     void deveFalharSeAssociadoJaVotou() {
         Long pautaId = 1L;
         UUID associadoId = UUID.randomUUID();
-        RegistrarVotoCommand command = new RegistrarVotoCommand(pautaId, associadoId, OpcaoVoto.SIM);
+        String cpf = "12345678901";
+        RegistrarVotoCommand command = new RegistrarVotoCommand(pautaId, associadoId, cpf, OpcaoVoto.SIM);
         SessaoVotacao sessao = new SessaoVotacao(pautaId, 1);
 
+        when(cpfValidationPort.isAbleToVote(cpf)).thenReturn(true);
         when(sessaoVotacaoRepositoryPort.findByPautaId(pautaId)).thenReturn(Optional.of(sessao));
-        when(votoRepositoryPort.existsByAssociadoIdAndPautaId(associadoId, pautaId)).thenReturn(true);
+        when(votoRepositoryPort.save(any(Voto.class))).thenThrow(new BusinessException("Associado já votou nesta pauta."));
 
         BusinessException exception = assertThrows(BusinessException.class, () -> registrarVotoUseCase.execute(command));
         assertEquals("Associado já votou nesta pauta.", exception.getMessage());
@@ -87,15 +110,16 @@ class RegistrarVotoUseCaseTest {
     void deveFalharSeSessaoEncerrada() {
         Long pautaId = 1L;
         UUID associadoId = UUID.randomUUID();
-        RegistrarVotoCommand command = new RegistrarVotoCommand(pautaId, associadoId, OpcaoVoto.SIM);
+        String cpf = "12345678901";
+        RegistrarVotoCommand command = new RegistrarVotoCommand(pautaId, associadoId, cpf, OpcaoVoto.SIM);
         
         // Sessão encerrada no passado
         LocalDateTime inicio = LocalDateTime.now().minusMinutes(10);
         LocalDateTime fim = LocalDateTime.now().minusMinutes(5);
-        SessaoVotacao sessao = new SessaoVotacao(1L, pautaId, inicio, fim, StatusSessao.ABERTA);
+        SessaoVotacao sessao = new SessaoVotacao(1L, pautaId, inicio, fim, StatusSessao.ABERTA, false);
 
+        when(cpfValidationPort.isAbleToVote(cpf)).thenReturn(true);
         when(sessaoVotacaoRepositoryPort.findByPautaId(pautaId)).thenReturn(Optional.of(sessao));
-        when(votoRepositoryPort.existsByAssociadoIdAndPautaId(associadoId, pautaId)).thenReturn(false);
 
         BusinessException exception = assertThrows(BusinessException.class, () -> registrarVotoUseCase.execute(command));
         assertEquals("A sessão de votação está encerrada.", exception.getMessage());

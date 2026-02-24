@@ -35,7 +35,7 @@ class SessaoVotacaoTest {
         // Criar uma sessão que já expirou
         LocalDateTime inicio = LocalDateTime.now().minusMinutes(10);
         LocalDateTime fim = LocalDateTime.now().minusMinutes(5);
-        SessaoVotacao sessao = new SessaoVotacao(1L, 1L, inicio, fim, StatusSessao.ABERTA);
+        SessaoVotacao sessao = new SessaoVotacao(1L, 1L, inicio, fim, StatusSessao.ABERTA, false);
 
         assertThrows(BusinessException.class, sessao::validarSePodeVotar);
         assertEquals(StatusSessao.ENCERRADA, sessao.getStatus());
@@ -46,25 +46,16 @@ class SessaoVotacaoTest {
     void deveFalharAoValidarVotoEmSessaoEncerrada() {
         SessaoVotacao sessao = new SessaoVotacao(1L, 1);
         // Forçar encerramento (em um cenário real isso viria do banco ou alteração de estado)
-        SessaoVotacao sessaoEncerrada = new SessaoVotacao(1L, 1L, sessao.getDataHoraInicio(), sessao.getDataHoraFim(), StatusSessao.ENCERRADA);
+        SessaoVotacao sessaoEncerrada = new SessaoVotacao(1L, 1L, sessao.getDataHoraInicio(), sessao.getDataHoraFim(), StatusSessao.ENCERRADA, false);
 
         assertThrows(BusinessException.class, sessaoEncerrada::validarSePodeVotar);
     }
 
     @Test
-    @DisplayName("Deve falhar ao validar voto se o associado já votou")
-    void deveFalharSeAssociadoJaVotou() {
-        SessaoVotacao sessao = new SessaoVotacao(1L, 1);
-        
-        BusinessException exception = assertThrows(BusinessException.class, () -> sessao.validarVoto(true));
-        assertEquals("Associado já votou nesta pauta.", exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("Deve validar voto com sucesso")
+    @DisplayName("Deve validar voto com sucesso em sessão aberta")
     void deveValidarVotoComSucesso() {
         SessaoVotacao sessao = new SessaoVotacao(1L, 1);
         
-        assertDoesNotThrow(() -> sessao.validarVoto(false));
+        assertDoesNotThrow(sessao::validarVoto);
     }
 }

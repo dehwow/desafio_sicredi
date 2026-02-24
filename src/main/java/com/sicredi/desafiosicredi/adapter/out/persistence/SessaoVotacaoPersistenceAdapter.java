@@ -8,7 +8,10 @@ import com.sicredi.desafiosicredi.application.port.out.SessaoVotacaoRepositoryPo
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -27,5 +30,13 @@ public class SessaoVotacaoPersistenceAdapter implements SessaoVotacaoRepositoryP
     @Override
     public Optional<SessaoVotacao> findByPautaId(Long pautaId) {
         return repository.findByPautaId(pautaId).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<SessaoVotacao> findAbertasExpiradas(LocalDateTime agora) {
+        return repository.findByDataHoraFimBeforeAndResultadoPublicadoFalse(agora)
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 }

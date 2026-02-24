@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/v1/pautas")
 @RequiredArgsConstructor
@@ -47,7 +49,7 @@ public class PautaController {
     @Operation(summary = "Registra um voto em uma pauta")
     public VotoResponseDTO registrarVoto(@PathVariable Long id, @RequestBody @Valid VotoRequestDTO request) {
         OpcaoVoto opcao = OpcaoVoto.valueOf(request.voto().toUpperCase());
-        Voto voto = registrarVotoUseCase.execute(new RegistrarVotoCommand(id, request.associadoId(), opcao));
+        Voto voto = registrarVotoUseCase.execute(new RegistrarVotoCommand(id, request.associadoId(), request.cpf(), opcao));
         return new VotoResponseDTO(voto.getPautaId(), voto.getAssociadoId(), voto.getOpcaoVoto().name());
     }
 

@@ -37,7 +37,7 @@ class AbrirSessaoUseCaseTest {
         Long pautaId = 1L;
         Pauta pauta = new Pauta(pautaId, "Pauta Teste");
         AbrirSessaoCommand command = new AbrirSessaoCommand(pautaId, 5);
-        SessaoVotacao sessaoSalva = new SessaoVotacao(100L, pautaId, java.time.LocalDateTime.now(), java.time.LocalDateTime.now().plusMinutes(5), com.sicredi.desafiosicredi.domain.model.StatusSessao.ABERTA);
+        SessaoVotacao sessaoSalva = new SessaoVotacao(100L, pautaId, java.time.LocalDateTime.now(), java.time.LocalDateTime.now().plusMinutes(5), com.sicredi.desafiosicredi.domain.model.StatusSessao.ABERTA, false);
 
         when(pautaRepositoryPort.findById(pautaId)).thenReturn(Optional.of(pauta));
         when(sessaoVotacaoRepositoryPort.save(any(SessaoVotacao.class))).thenReturn(sessaoSalva);

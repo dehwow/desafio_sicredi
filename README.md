@@ -20,7 +20,7 @@ A aplicação utiliza os princípios da **Arquitetura Hexagonal (Ports & Adapter
 
 ### Rodando com Docker Compose
 
-A aplicação está configurada para subir o banco de dados PostgreSQL e a própria API de forma orquestrada.
+A aplicação está configurada para subir o banco de dados PostgreSQL, o Apache Kafka e a própria API de forma orquestrada.
 
 1. Clone o repositório.
 2. Na raiz do projeto, execute:
@@ -79,13 +79,37 @@ Os testes de integração utilizam **Testcontainers** para subir uma instância 
 
 ---
 
+## ⚡ Virtual Threads (Java 21)
+
+A aplicação utiliza **Virtual Threads** (Project Loom), habilitadas nativamente pelo Spring Boot 3.2+ com Java 21, para melhorar a escalabilidade em operações I/O bound.
+
+### O que são Virtual Threads?
+Virtual Threads são threads leves gerenciadas pela JVM que permitem lidar com um número muito maior de requisições concorrentes sem o custo de memória das threads tradicionais do sistema operacional.
+
+### Como está configurado?
+- A propriedade `spring.threads.virtual.enabled=true` está ativada no `application.yml`.
+- O Tomcat passa a utilizar Virtual Threads automaticamente para processar requisições HTTP.
+- O endpoint temporário `GET /v1/diagnostic/thread-info` pode ser usado para confirmar que as requisições estão sendo processadas por Virtual Threads.
+
+### Benefícios
+- **Maior concorrência I/O bound**: Operações que aguardam respostas do banco de dados, APIs externas ou Kafka não bloqueiam threads do sistema operacional.
+- **Sem complexidade adicional**: Não requer mudanças na arquitetura, use cases, ports ou adapters existentes.
+- **Escalabilidade natural**: A aplicação pode processar milhares de requisições simultâneas com um pool de threads muito menor.
+
+### Importante
+- Virtual Threads **não substituem** otimizações de banco de dados (índices, queries eficientes, controle de concorrência).
+- O pool de conexões do **HikariCP** continua sendo o gargalo real, pois o número de conexões ao banco é limitado (configurado entre 5 e 15 conexões). Aumentar o pool de conexões para compensar Virtual Threads não é recomendado — o limite continua sendo o banco de dados.
+
+---
+
 ## 🧰 Tecnologias Utilizadas
 
-- **Java 21**
+- **Java 21** (com Virtual Threads)
 - **Spring Boot 3.4**
 - **Spring Data JPA**
 - **Flyway** (Migração de banco de dados)
 - **PostgreSQL**
+- **Apache Kafka**
 - **MapStruct** (Mapeamento de objetos)
 - **Lombok**
 - **SpringDoc OpenAPI (Swagger)**

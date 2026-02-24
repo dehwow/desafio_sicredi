@@ -11,6 +11,8 @@ public class SessaoVotacao {
     private LocalDateTime dataHoraInicio;
     private LocalDateTime dataHoraFim;
     private StatusSessao status;
+    private boolean resultadoPublicado;
+    private Integer version;
 
     public SessaoVotacao(Long pautaId, Integer duracaoEmMinutos) {
         if (pautaId == null) {
@@ -22,12 +24,31 @@ public class SessaoVotacao {
         this.status = StatusSessao.ABERTA;
     }
 
-    public SessaoVotacao(Long id, Long pautaId, LocalDateTime dataHoraInicio, LocalDateTime dataHoraFim, StatusSessao status) {
+    public SessaoVotacao(Long id, Long pautaId, LocalDateTime dataHoraInicio, LocalDateTime dataHoraFim, StatusSessao status, boolean resultadoPublicado) {
         this.id = id;
         this.pautaId = pautaId;
         this.dataHoraInicio = dataHoraInicio;
         this.dataHoraFim = dataHoraFim;
         this.status = status;
+        this.resultadoPublicado = resultadoPublicado;
+    }
+
+    public SessaoVotacao(Long id, Long pautaId, LocalDateTime dataHoraInicio, LocalDateTime dataHoraFim, StatusSessao status, boolean resultadoPublicado, Integer version) {
+        this.id = id;
+        this.pautaId = pautaId;
+        this.dataHoraInicio = dataHoraInicio;
+        this.dataHoraFim = dataHoraFim;
+        this.status = status;
+        this.resultadoPublicado = resultadoPublicado;
+        this.version = version;
+    }
+
+    public void marcarComoPublicado() {
+        this.resultadoPublicado = true;
+    }
+
+    public boolean isResultadoPublicado() {
+        return resultadoPublicado;
     }
 
     public void validarSePodeVotar() {
@@ -41,10 +62,7 @@ public class SessaoVotacao {
         }
     }
 
-    public void validarVoto(boolean associadoJaVotou) {
-        if (associadoJaVotou) {
-            throw new BusinessException("Associado já votou nesta pauta.");
-        }
+    public void validarVoto() {
         validarSePodeVotar();
     }
 
@@ -83,6 +101,10 @@ public class SessaoVotacao {
         if (o == null || getClass() != o.getClass()) return false;
         SessaoVotacao that = (SessaoVotacao) o;
         return Objects.equals(id, that.id);
+    }
+
+    public Integer getVersion() {
+        return version;
     }
 
     @Override
