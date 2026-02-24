@@ -165,7 +165,9 @@ Com as **Virtual Threads** ativas, a aplicação consegue gerir as centenas de c
 
 A aplicação utiliza **Virtual Threads** (Project Loom), habilitadas nativamente pelo Spring Boot 3.2+ com Java 21, para melhorar a escalabilidade em operações I/O bound.
 
-### Versionamento da API
+---
+
+## Versionamento da API
 API foi versionada utilizando URI Versioning, através do prefixo /v1.
 ````
 POST /v1/pautas
@@ -180,6 +182,46 @@ Foi adotado versionamento via URI por:
  - Facilidade de manutenção
  - Compatibilidade com ferramentas de API Gateway
  - Estratégia amplamente utilizada em APIs REST públicas
+
+---
+
+## Kafka
+Apuração Automática via Scheduler
+
+A aplicação possui um scheduler responsável por verificar sessões abertas cujo tempo de votação expirou.
+
+Funcionamento:
+
+1 - Periodicamente (ex: a cada X segundos), o scheduler:
+
+ - Busca sessões com status ABERTA
+
+ - Verifica se o prazo foi ultrapassado
+
+2 - Caso a sessão esteja expirada:
+
+ - Atualiza status para ENCERRADA
+
+ - Executa apuração
+
+ - Publica evento no Kafka
+
+O scheduler garante que:
+
+ - Sessões são encerradas automaticamente
+
+ - Não dependem de chamada externa para finalização
+
+ - O resultado é sempre publicado de forma consistente
+
+```
+{
+  "pautaId": 1,
+  "totalSim": 120,
+  "totalNao": 45,
+  "resultado": "SIM"
+}
+```
 
 ---
 
