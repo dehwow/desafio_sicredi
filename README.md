@@ -165,23 +165,6 @@ Com as **Virtual Threads** ativas, a aplicação consegue gerir as centenas de c
 
 A aplicação utiliza **Virtual Threads** (Project Loom), habilitadas nativamente pelo Spring Boot 3.2+ com Java 21, para melhorar a escalabilidade em operações I/O bound.
 
-### O que são Virtual Threads?
-Virtual Threads são threads leves gerenciadas pela JVM que permitem lidar com um número muito maior de requisições concorrentes sem o custo de memória das threads tradicionais do sistema operacional.
-
-### Como está configurado?
-- A propriedade `spring.threads.virtual.enabled=true` está ativada no `application.yml`.
-- O Tomcat passa a utilizar Virtual Threads automaticamente para processar requisições HTTP.
-- O endpoint temporário `GET /v1/diagnostic/thread-info` pode ser usado para confirmar que as requisições estão a ser processadas por Virtual Threads.
-
-### Benefícios
-- **Maior concorrência I/O bound**: Operações que aguardam respostas do banco de dados, APIs externas ou Kafka não bloqueiam threads do sistema operacional.
-- **Sem complexidade adicional**: Não requer mudanças na arquitetura, use cases, ports ou adapters existentes.
-- **Escalabilidade natural**: A aplicação pode processar milhares de requisições simultâneas com um pool de threads muito menor.
-
-### Importante
-- Virtual Threads **não substituem** otimizações de banco de dados (índices, queries eficientes, controle de concorrência).
-- O pool de conexões do **HikariCP** continua sendo o gargalo real, pois o número de conexões ao banco é limitado (configurado entre 5 e 15 conexões). Aumentar o pool de conexões para compensar Virtual Threads não é recomendado — o limite continua sendo o banco de dados.
-
 ### Versionamento da API
 API foi versionada utilizando URI Versioning, através do prefixo /v1.
 ````
