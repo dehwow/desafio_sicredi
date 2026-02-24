@@ -154,10 +154,10 @@ Conclusão:
 A aplicação mantém estabilidade sob carga concorrente,
 com integridade garantida por constraints e controle otimista.
 
-ps: chamada externa para validação de CPF, desligada devido a indisponibilidade durante os testes.
+ps: A chamada externa para validação de CPF, foi desligada devido à indisponibilidade durante os testes.
 
 ### Virtual Threads e Performance
-Com as **Virtual Threads** ativas, a aplicação consegue gerenciar as centenas de conexões concorrentes do k6 de forma eficiente. No entanto, o **banco de dados** continua sendo o gargalo físico real. As otimizações de query, índices e o controle de concorrência otimista garantem a integridade dos dados mesmo com alto volume de requisições simultâneas.
+Com as **Virtual Threads** ativas, a aplicação consegue gerir as centenas de conexões concorrentes do k6 de forma eficiente. No entanto, o **banco de dados** continua sendo o gargalo físico real. As otimizações de query, índices e o controle de concorrência otimista garantem a integridade dos dados mesmo com alto volume de requisições simultâneas.
 
 ---
 
@@ -171,7 +171,7 @@ Virtual Threads são threads leves gerenciadas pela JVM que permitem lidar com u
 ### Como está configurado?
 - A propriedade `spring.threads.virtual.enabled=true` está ativada no `application.yml`.
 - O Tomcat passa a utilizar Virtual Threads automaticamente para processar requisições HTTP.
-- O endpoint temporário `GET /v1/diagnostic/thread-info` pode ser usado para confirmar que as requisições estão sendo processadas por Virtual Threads.
+- O endpoint temporário `GET /v1/diagnostic/thread-info` pode ser usado para confirmar que as requisições estão a ser processadas por Virtual Threads.
 
 ### Benefícios
 - **Maior concorrência I/O bound**: Operações que aguardam respostas do banco de dados, APIs externas ou Kafka não bloqueiam threads do sistema operacional.
